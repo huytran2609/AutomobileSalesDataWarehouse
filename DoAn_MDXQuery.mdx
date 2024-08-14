@@ -1,0 +1,70 @@
+﻿--1. Cho biết tổng số lượng xe đã bán của hãng Mercedes-Benz theo từng năm
+SELECT NON EMPTY { [Measures].[Fact Cars For Sale Count] } ON COLUMNS, 
+NON EMPTY { ([Dim Date].[Year].[Year].ALLMEMBERS * [Dim Car].[Make].[Make].ALLMEMBERS ) }ON ROWS 
+FROM ( SELECT ( { [Dim Car].[Make].&[Mercedes-Benz] } ) ON COLUMNS 
+FROM [Car Ware House]);
+
+--2. Cho biết tổng số lượng mẫu xe được bán trong từng hãng xe.
+SELECT NON EMPTY { [Measures].[Fact Cars For Sale Count] } ON COLUMNS, 
+NON EMPTY { ([Dim Car].[Make].[Make].ALLMEMBERS * [Dim Car].[Model].[Model].ALLMEMBERS ) }ON ROWS 
+FROM [Car Ware House];
+
+--3. Cho biết thông tin các mẫu xe có màu nội thất màu đen và có đánh giá của khách hàng lớn hơn 4.4
+SELECT NON EMPTY {[Measures].[Consumer Rating] } 
+ON COLUMNS, NON EMPTY { ([Dim Car].[VIN].[VIN].ALLMEMBERS * [Dim Car].[Make].[Make].ALLMEMBERS * 
+			[Dim Car].[Model].[Model].ALLMEMBERS * 
+			[Dim Car].[Interior Color].[Interior Color].ALLMEMBERS ) }
+ON ROWS FROM ( SELECT ( FILTER([Dim Car].[VIN].CHILDREN, [Measures].[Consumer Rating] > 4.4) ) 
+				ON COLUMNS FROM ( SELECT ( { [Dim Car].[Interior Color].&[Black] } ) 
+				ON COLUMNS FROM [Car Ware House]));
+
+--4. Đưa ra TOP 3 mẫu xe đã bán nhiều nhất trong năm 2020
+ SELECT NON EMPTY { [Measures].[Fact Cars For Sale Count] } 
+ ON COLUMNS, NON EMPTY { ([Dim Date].[Year].[Year].ALLMEMBERS * [Dim Car].[Model].[Model].ALLMEMBERS ) }
+ ON ROWS FROM ( SELECT ( TOPCOUNT([Dim Car].[Model].CHILDREN, 3, [Measures].[Fact Cars For Sale Count]) ) 
+ ON COLUMNS FROM ( SELECT ( { [Dim Date].[Year].&[2.02E3] } ) 
+ ON COLUMNS FROM [Car Ware House]));
+
+--5. Liệt kê những mẫu xe có số dặm từ 5000 - 10000
+SELECT NON EMPTY { [Measures].[Mileage] }
+ON COLUMNS, NON EMPTY { ([Dim Car].[VIN].[VIN].ALLMEMBERS * [Dim Car].[Model].[Model].ALLMEMBERS ) }
+ON ROWS FROM ( SELECT ( FILTER([Dim Car].[VIN].CHILDREN, [Measures].[Mileage] >= 5000 
+						AND [Measures].[Mileage] <= 10000) ) 
+ON COLUMNS FROM [Car Ware House]);
+
+--6. Đưa ra 3 mẫu xe có màu ngoại thất màu đen có số lượng mua ít nhất.
+SELECT NON EMPTY { [Measures].[Fact Cars For Sale Count] }
+ON COLUMNS, NON EMPTY { ([Dim Car].[Model].[Model].ALLMEMBERS * 
+						[Dim Car].[Exterior Color].[Exterior Color].ALLMEMBERS ) }
+ON ROWS FROM ( SELECT ( BOTTOMCOUNT([Dim Car].[Model].CHILDREN, 3, [Measures].[Fact Cars For Sale Count]) ) 
+ON COLUMNS FROM ( SELECT ( { [Dim Car].[Exterior Color].&[Black] } ) 
+ON COLUMNS FROM [Car Ware House]));
+
+--7. Liệt kê những hãng xe thuộc top 5 doanh thu cao nhất.
+ SELECT NON EMPTY { [Measures].[Price] }
+ ON COLUMNS, NON EMPTY { ([Dim Car].[Make].[Make].ALLMEMBERS ) }
+ ON ROWS FROM ( SELECT ( TOPCOUNT([Dim Car].[Make].CHILDREN, 5, [Measures].[Price]) ) 
+ ON COLUMNS FROM [Car Ware House]);
+
+--8. Liệt kê những mẫu xe thuộc người bán là tư nhân và có đánh giá độ tin cậy lớn hơn 4.5.
+SELECT NON EMPTY { [Measures].[Reliability Rating] }
+ON COLUMNS, NON EMPTY { ([Dim Car].[VIN].[VIN].ALLMEMBERS * 
+						[Dim Car].[Model].[Model].ALLMEMBERS * 
+						[Dim Sale].[Seller Type].[Seller Type].ALLMEMBERS ) }
+ON ROWS FROM ( SELECT ( FILTER([Dim Car].[VIN].CHILDREN, [Measures].[Reliability Rating] > 4.5) )
+ON COLUMNS FROM ( SELECT ( { [Dim Sale].[Seller Type].&[Private] } )
+ON COLUMNS FROM [Car Ware House]));
+
+--9. Cho biết số lượng xe đã bán theo màu ngoại thất và loại nhiên liệu.
+SELECT NON EMPTY { [Measures].[Fact Cars For Sale Count] }
+ON COLUMNS, NON EMPTY { ([Dim Car].[Exterior Color].[Exterior Color].ALLMEMBERS * 
+						[Dim Fuel].[Fuel Type].[Fuel Type].ALLMEMBERS ) }
+ON ROWS FROM [Car Ware House];
+
+--10. Với mỗi hãng xe, đưa ra 3 mẫu xe bán ra nhiều nhất.
+ SELECT NON EMPTY { [Measures].[Fact Cars For Sale Count] } 
+ ON COLUMNS, NON EMPTY { Generate([Dim Car].[Make].children, 
+			topcount({[Dim Car].[Make].currentmember * 
+			[Dim Car].[Model].children}, 3, [Measures].[Fact Cars For Sale Count])) }
+ ON ROWS FROM [Car Ware House];
+

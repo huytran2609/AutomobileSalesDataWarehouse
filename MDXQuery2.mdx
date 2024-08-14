@@ -1,0 +1,5 @@
+Generate([Dim Car].[Make].children, 
+			topcount({[Dim Car].[Make].currentmember * 
+			[Dim Car].[Model].children}, 3, [Measures].[Fact Cars For Sale Count]))
+
+
